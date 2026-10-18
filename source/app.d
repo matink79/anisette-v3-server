@@ -36,7 +36,8 @@ __gshared string libraryPath;
 __gshared string provisioningPath;
 
 enum brandingCode = format!"anisette-v3-server v%s"(provisionVersion);
-enum clientInfo = "<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.akd/1.0)>";
+enum v1ClientInfo = "<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.akd/1.0)>";
+enum v3ClientInfo = "<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.akd/1.0)>";
 enum dsId = -2;
 
 __gshared ADI v1Adi;
@@ -140,13 +141,16 @@ int main(string[] args) {
 
 		import std.random;
 		import std.range;
-		v1Device.serverFriendlyDescription = clientInfo;
+		
 		v1Device.uniqueDeviceIdentifier = randomUUID().toString().toUpper();
 		v1Device.adiIdentifier = (cast(ubyte[]) rndGen.take(2).array()).toHexString().toLower();
 		v1Device.localUserUUID = (cast(ubyte[]) rndGen.take(8).array()).toHexString().toUpper();
 
 		log.info("Machine creation done!");
 	}
+
+	// Keep the v1 client-info value deterministic even when device.json already exists.
+	v1Device.serverFriendlyDescription = v1ClientInfo;
 
 	v1Adi.identifier = v1Device.adiIdentifier;
 	if (!v1Adi.isMachineProvisioned(dsId)) {
@@ -231,7 +235,7 @@ class AnisetteService {
 		auto log = getLogger();
 		log.info("[<<] anisette-v3 /v3/client_info");
 		JSONValue responseJson = [
-			"client_info": clientInfo,
+			"client_info": v3ClientInfo,
 			"user_agent": "akd/1.0 CFNetwork/808.1.4"
 		];
 
